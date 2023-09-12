@@ -19,8 +19,11 @@ import androidx.core.hardware.display.DisplayManagerCompat
 import app.screenreader.MainActivity
 import app.screenreader.R
 import app.screenreader.extensions.getSpannable
+import app.screenreader.extensions.setGestures
+import app.screenreader.extensions.setInstructions
 import app.screenreader.model.Constants
 import app.screenreader.model.Gesture
+import app.screenreader.tabs.gestures.GestureActivity
 import java.io.Serializable
 
 /**
@@ -123,6 +126,10 @@ class ScreenReaderService: AccessibilityService() {
     override fun onGesture(gestureId: Int): Boolean {
         Log.i(TAG, "onGesture: $gestureId")
 
+        if (gestureId == GESTURE_UNKNOWN) {
+            Log.i(TAG, "Unknown gesture performed")
+        }
+
         // Broadcast gesture to GestureActivity
         Gesture.from(gestureId)?.let { gesture ->
             broadcast(Constants.SERVICE_GESTURE, gesture)
@@ -145,8 +152,9 @@ class ScreenReaderService: AccessibilityService() {
     }
 
     private fun kill() {
-        broadcast(Constants.SERVICE_KILLED, true)
-        disableSelf()
+        Log.d(TAG, "Killing ScreenReaderService")
+//        broadcast(Constants.SERVICE_KILLED, true)
+//        disableSelf()
     }
 
     private fun isTouchExploring(): Boolean {
@@ -182,11 +190,11 @@ class ScreenReaderService: AccessibilityService() {
             gesture.completed(this, false)
         }
 
-//        val intent = Intent(this, GestureActivity::class.java)
-//        intent.setGestures(gestures)
-//        intent.setInstructions(instructions)
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//        startActivity(intent)
+        val intent = Intent(this, GestureActivity::class.java)
+        intent.setGestures(gestures)
+        intent.setInstructions(instructions)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     companion object {

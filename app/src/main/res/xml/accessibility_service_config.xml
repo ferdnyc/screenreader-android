@@ -1,0 +1,11 @@
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/service_description"
+    android:packageNames="app.screenreader"
+    android:canRetrieveWindowContent="false"
+    android:canRequestTouchExplorationMode="true"
+    android:canPerformGestures="true"
+    android:accessibilityEventTypes="typeTouchExplorationGestureStart|typeTouchExplorationGestureEnd|typeGestureDetectionStart|typeGestureDetectionEnd"
+    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagRequestTouchExplorationMode|flagRequestMultiFingerGestures|flagSendMotionEvents|flagServiceHandlesDoubleTap"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:notificationTimeout="100"
+    android:settingsActivity="app.screenreader.MainActivity" />
