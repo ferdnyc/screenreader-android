@@ -13,6 +13,7 @@ import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.hardware.display.DisplayManagerCompat
@@ -43,27 +44,33 @@ class ScreenReaderService: AccessibilityService() {
         super.onCreate()
         Log.i(TAG, "onCreate")
 
-        // Set passthrough regions
-        setPassthroughRegions()
-
         // Start GestureActivity
         startGestureTraining()
     }
 
-    private fun setPassthroughRegions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            ContextCompat.getSystemService(this, WindowManager::class.java)?.let { windowManager ->
-                val bounds = windowManager.currentWindowMetrics.bounds
-                val region = Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
-
-                val displays = DisplayManagerCompat.getInstance(this).displays
-                displays.forEach { display ->
-                    Log.d(TAG, "Setting passthrough for display ${display.displayId} to: $region")
-                    setTouchExplorationPassthroughRegion(display.displayId, region)
-                    setGestureDetectionPassthroughRegion(display.displayId, region)
-                }
-            }
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun getAppRegion(): Region {
+        ContextCompat.getSystemService(this, WindowManager::class.java)?.let { windowManager ->
+            val bounds = windowManager.currentWindowMetrics.bounds
+            // TODO: Use app specific bounds instead of full screen
+            return Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
         }
+        // TODO: Add failsafe
+        return Region()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun setPassthroughRegions(region: Region) {
+        DisplayManagerCompat.getInstance(this).displays.forEach { display ->
+            Log.d(TAG, "Setting passthrough for display ${display.displayId} to: $region")
+            setTouchExplorationPassthroughRegion(display.displayId, region)
+            setGestureDetectionPassthroughRegion(display.displayId, region)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun unsetPassthroughRegions() {
+        setPassthroughRegions(Region())
     }
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
@@ -74,10 +81,20 @@ class ScreenReaderService: AccessibilityService() {
     override fun onServiceConnected() {
         Log.i(TAG, "Service connected")
         super.onServiceConnected()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val region = getAppRegion()
+            setPassthroughRegions(region)
+        }
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.i(TAG, "onUnbind")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            unsetPassthroughRegions()
+        }
+
         return super.onUnbind(intent)
     }
 
@@ -153,8 +170,8 @@ class ScreenReaderService: AccessibilityService() {
 
     private fun kill() {
         Log.d(TAG, "Killing ScreenReaderService")
-//        broadcast(Constants.SERVICE_KILLED, true)
-//        disableSelf()
+        broadcast(Constants.SERVICE_KILLED, true)
+        disableSelf()
     }
 
     private fun isTouchExploring(): Boolean {
@@ -200,7 +217,7 @@ class ScreenReaderService: AccessibilityService() {
     companion object {
         fun isEnabled(context: Context): Boolean {
             (context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).let { manager ->
-                val services = manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+                val services = manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_GENERIC)
                 for (service in services) {
                     if (service.resolveInfo.serviceInfo.name == ScreenReaderService::class.java.name) {
                         return true

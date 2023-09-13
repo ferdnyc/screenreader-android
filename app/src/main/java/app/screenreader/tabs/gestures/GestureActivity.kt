@@ -131,9 +131,10 @@ class GestureActivity: ToolbarActivity(), GestureViewCallback {
 
         if (Accessibility.screenReader(this)) {
             if (ScreenReaderService.isEnabled(this)) {
-                Timer().schedule(500) {
+                Timer().schedule(1000) {
                     runOnUiThread {
                         Accessibility.focus(gestureView)
+                        Accessibility.announce(applicationContext, container.contentDescription.toString())
                     }
                 }
             } else {
@@ -181,6 +182,7 @@ class GestureActivity: ToolbarActivity(), GestureViewCallback {
         }
 
         // Show feedback
+        Accessibility.announce(this, feedback.toString())
         feedbackTextView.animate()
             .alpha(0.0f)
             .setDuration(250)

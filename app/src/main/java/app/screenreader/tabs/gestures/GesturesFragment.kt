@@ -102,8 +102,7 @@ class GesturesFragment : ListFragment() {
 
     private fun onGestureClicked(gesture: Gesture) {
         if (Accessibility.screenReader(context)) {
-            context?.showDialog(R.string.service_talkback_enabled_title, R.string.service_talkback_enabled_message)
-            return
+            // TODO: Enable GestureService, start single gesture
         }
 
         startActivity<GestureActivity>(REQUEST_CODE_SINGLE) {
@@ -113,8 +112,7 @@ class GesturesFragment : ListFragment() {
 
     private fun onPracticeClicked() {
         if (Accessibility.screenReader(context)) {
-            context?.showDialog(R.string.service_talkback_enabled_title, R.string.service_talkback_enabled_message)
-            return
+            // TODO: Enable GestureService, start practice
         }
 
         AlertDialog.Builder(requireContext())

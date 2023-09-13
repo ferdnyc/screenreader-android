@@ -105,9 +105,6 @@ open class SwipeGestureView(
             if (direction != Direction.UNKNOWN) {
                 // Determine amount of fingers
                 direction.fingers = e2.pointerCount ?: 1
-                if (ScreenReaderService.isEnabled(context)) {
-                    direction.fingers++
-                }
 
                 if (path.isEmpty()) {
                     // Add first direction

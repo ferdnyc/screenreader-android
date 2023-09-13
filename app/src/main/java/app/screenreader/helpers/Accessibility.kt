@@ -64,7 +64,12 @@ object Accessibility {
      */
     fun announce(context: Context?, message: String) {
         accessibilityManager(context)?.let { accessibilityManager ->
-            val event = AccessibilityEvent.obtain(AccessibilityEventCompat.TYPE_ANNOUNCEMENT)
+            val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                AccessibilityEvent()
+            } else {
+                AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT)
+            }
+            event.eventType = AccessibilityEvent.TYPE_ANNOUNCEMENT
             event.text.add(message)
 
             accessibilityManager.sendAccessibilityEvent(event)

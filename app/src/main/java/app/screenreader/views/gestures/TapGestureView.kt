@@ -36,13 +36,8 @@ class TapGestureView(
             hold = true
         }
 
-        if (ScreenReaderService.isEnabled(context)) {
-            taps += 1
-        }
-
         when {
             fingers != gesture.fingers -> {
-
                 incorrect(R.string.gestures_feedback_tap_fingers, gesture.fingers, fingers)
             }
             taps != gesture.taps -> {
